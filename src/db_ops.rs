@@ -3,7 +3,7 @@ use anyhow::Result;
 use sqlx::{postgres::PgPool, query_as};
 
 pub async fn get_items(
-    pool: &PgPool,
+    db: &PgPool,
     offset: Option<i64>,
 ) -> Result<Vec<models::Item>> {
     struct QRes {
@@ -11,12 +11,12 @@ pub async fn get_items(
         title: String,
         is_completed: bool,
     }
-    let res = sqlx::query_as!(
+    let res = query_as!(
         QRes,
         "select id, title, is_completed from item limit 10 offset $1",
         offset.unwrap_or(0)
     )
-    .fetch_all(pool)
+    .fetch_all(db)
     .await?;
 
     Ok(res
