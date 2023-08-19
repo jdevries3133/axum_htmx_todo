@@ -1,6 +1,6 @@
 use axum::{
     middleware::from_fn,
-    routing::{get, Router},
+    routing::{get, post, Router},
 };
 use dotenvy::dotenv;
 use sqlx::{postgres::PgPoolOptions, Pool, Postgres};
@@ -27,6 +27,7 @@ async fn main() {
     let app = Router::new()
         .route("/", get(routes::root))
         .route("/todo-items", get(routes::list_todos))
+        .route("/create-item", post(routes::create_todo))
         .layer(from_fn(middleware::html_headers))
         .with_state(state);
 

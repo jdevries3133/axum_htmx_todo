@@ -87,29 +87,34 @@ impl private::ComponentInternal for TodoHome {
         TodoHome::default()
     }
     fn render_internal(_: &TodoHome) -> String {
-        r#"
+        r##"
         <main class="flex items-center justify-center">
             <div class="max-w-md p-2 m-2 bg-indigo-50 rounded shadow">
                 <h1 class="text-xl mb-4 text-center">Todo App</h1>
-                <form class="flex flex-row" hx-post="/create-item">
+                <form
+                    class="flex flex-row"
+                    hx-post="/create-item"
+                    hx-target="#todo-items"
+                    hx-swap="afterbegin"
+                >
                     <div class="flex items-center gap-2">
                         <label for="title">Add Item</label>
                         <input class="rounded" type="text" name="title" id="title" />
                     </div>
                     <button class="bg-blue-200 rounded shadow hover:shadow-none hover:bg-blue-300 hover:font-bold transition">Submit</button>
                 </form>
-                <div hx-get="/todo-items" hx-trigger="load">
+                <div hx-get="/todo-items" hx-trigger="load" id="todo-items">
                     Loading your todo list...
                 </div>
             </div>
         </main>
-        "#.to_string()
+        "##.to_string()
     }
 }
 
 #[derive(Clone)]
 pub struct Item {
-    item: models::Item,
+    pub item: models::Item,
 }
 impl Component for Item {}
 impl private::ComponentInternal for Item {

@@ -1,6 +1,6 @@
 use super::models;
 use anyhow::Result;
-use sqlx::{postgres::PgPool, query_as};
+use sqlx::{postgres::PgPool, query, query_as};
 
 pub async fn get_items(
     db: &PgPool,
@@ -27,4 +27,46 @@ pub async fn get_items(
             is_completed: i.is_completed,
         })
         .collect())
+}
+
+pub async fn save_item(
+    db: &PgPool,
+    mut item: models::Item,
+) -> Result<models::Item> {
+    struct QRes {
+        id: i32,
+    }
+    if let Some(id) = item.id {
+        query!(
+            "
+            update item
+            set
+                title = $1,
+                is_completed = $2
+            where id = $3
+            ",
+            item.title,
+            item.is_completed,
+            id
+        )
+        .fetch_one(db)
+        .await?;
+        Ok(item)
+    } else {
+        let res = query_as!(
+            QRes,
+            "
+        insert into item (title, is_completed) values ($1, $2)
+        returning id
+        ",
+            item.title,
+            item.is_completed
+        )
+        .fetch_one(db)
+        .await?;
+
+        item.id = Some(res.id);
+
+        Ok(item)
+    }
 }
