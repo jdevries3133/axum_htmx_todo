@@ -4,7 +4,7 @@ use super::{
 };
 use anyhow::Result;
 use axum::{
-    extract::{Query, State},
+    extract::{Query, State, Path},
     response::IntoResponse,
     Form,
 };
@@ -60,4 +60,12 @@ pub async fn save_todo(
     .await?;
 
     Ok(components::Item { item }.render())
+}
+
+pub async fn delete_todo(
+    State(AppState { db }): State<AppState>,
+    Path(id): Path<i32>
+) -> Result<impl IntoResponse, ServerError> {
+    db_ops::delete_item(&db, id).await?;
+    Ok("")
 }

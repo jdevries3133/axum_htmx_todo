@@ -72,3 +72,15 @@ pub async fn save_item(
         Ok(item)
     }
 }
+
+pub async fn delete_item(
+    db: &PgPool,
+    id: i32
+) -> Result<()> {
+    query!(
+        "delete from item where id = $1",
+        id
+    ).execute(db).await?;
+
+    Ok(())
+}

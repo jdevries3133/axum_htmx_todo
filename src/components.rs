@@ -161,6 +161,13 @@ impl private::ComponentInternal for Item {
                 <input type="hidden" name="title" value="{title}" />
                 <input type="hidden" name="id" value="{id}" />
                 <h2 class="text-md">{title}</h2>
+                <button
+                    hx-delete="/item/{id}"
+                    hx-swap="outerHTML"
+                    hx-target="closest form"
+                    class="flex items-center justify-center rounded-full text-lg
+                    w-6 h-6 bg-red-100 justify-self-right"
+                >x</button>
             </form>
             "#,
             id = id_str,
