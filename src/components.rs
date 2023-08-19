@@ -56,6 +56,7 @@ where
         // Make sure you use `make build` in the Makefile to get both to happen
         // together
         let tailwind = include_str!("./tailwind.generated.css");
+        let htmx = include_str!("./htmx-1.9.3.vendor.js");
         format!(
             r#"
             <html>
@@ -68,7 +69,7 @@ where
                 </head>
                 <body>
                     {body_html}
-                    <script src="https://unpkg.com/htmx.org@1.9.3" integrity="sha384-lVb3Rd/Ca0AxaoZg5sACe8FJKF0tnUgR2Kd7ehUOG5GCcROv5uBIZsOqovBAcWua" crossorigin="anonymous"></script>
+                    <script>{htmx}</script>
                 </body>
             </html>
             "#,
