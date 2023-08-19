@@ -4,10 +4,12 @@ use axum::{
     response::{IntoResponse, Response},
 };
 
+#[derive(Debug)]
 pub struct ServerError(Error);
 
 impl IntoResponse for ServerError {
     fn into_response(self) -> Response {
+        println!("{:?}", self);
         (
             StatusCode::INTERNAL_SERVER_ERROR,
             format!("Something went wrong: {}", self.0),

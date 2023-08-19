@@ -33,18 +33,28 @@ pub async fn list_todos(
 
 #[derive(Deserialize)]
 pub struct CreateForm {
+    id: Option<i32>,
     title: String,
+    // My browser is sending `is_completed: on` when the box is checked, or
+    // it omits the property entirely otherwise. I'm going to hope that's
+    // basically some sort of web standard and handle it here.
+    is_completed: Option<String>,
 }
-pub async fn create_todo(
+
+pub async fn save_todo(
     State(AppState { db }): State<AppState>,
-    Form(CreateForm { title }): Form<CreateForm>,
+    Form(CreateForm {
+        id,
+        title,
+        is_completed,
+    }): Form<CreateForm>,
 ) -> Result<impl IntoResponse, ServerError> {
     let item = db_ops::save_item(
         &db,
         models::Item {
-            id: None,
+            id,
             title,
-            is_completed: false,
+            is_completed: is_completed.is_some(),
         },
     )
     .await?;

@@ -73,6 +73,7 @@ where
             </html>
             "#,
             tailwind = tailwind,
+            htmx = htmx,
             title = sanitized.title,
             body_html = sanitized.children.render()
         )
@@ -93,17 +94,22 @@ impl private::ComponentInternal for TodoHome {
                 <h1 class="text-xl mb-4 text-center">Todo App</h1>
                 <form
                     class="flex flex-row"
-                    hx-post="/create-item"
+                    hx-post="/item"
                     hx-target="#todo-items"
                     hx-swap="afterbegin"
+                    hx-on::after-request="this.reset()"
                 >
                     <div class="flex items-center gap-2">
                         <label for="title">Add Item</label>
                         <input class="rounded" type="text" name="title" id="title" />
+                        <button class="w-24 h-8 bg-blue-200 rounded shadow hover:shadow-none hover:bg-blue-300 hover:font-bold transition">Submit</button>
                     </div>
-                    <button class="bg-blue-200 rounded shadow hover:shadow-none hover:bg-blue-300 hover:font-bold transition">Submit</button>
                 </form>
-                <div hx-get="/todo-items" hx-trigger="load" id="todo-items">
+                <div
+                    hx-get="/todo-items"
+                    hx-trigger="load"
+                    id="todo-items"
+                >
                     Loading your todo list...
                 </div>
             </div>
@@ -133,11 +139,30 @@ impl private::ComponentInternal for Item {
         } else {
             ""
         };
+        let id_str = if let Some(id) = sanitized.item.id {
+            format!("{}", id)
+        } else {
+            "".to_string()
+        };
         format!(
             r#"
-            {id:?} -- {title} -- {checked_state}
+            <form
+                class="rounded flex items-center gap-2"
+            >
+                <input
+                    class="rounded"
+                    type="checkbox" {checked_state} 
+                    name="is_completed"
+                    hx-post="/item"
+                    hx-target="closest form"
+                    hx-swap="outerHTML"
+                />
+                <input type="hidden" name="title" value="{title}" />
+                <input type="hidden" name="id" value="{id}" />
+                <h2 class="text-md">{title}</h2>
+            </form>
             "#,
-            id = sanitized.item.id,
+            id = id_str,
             title = sanitized.item.title,
             checked_state = checked_state
         )

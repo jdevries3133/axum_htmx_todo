@@ -13,7 +13,9 @@ pub async fn get_items(
     }
     let res = query_as!(
         QRes,
-        "select id, title, is_completed from item limit 10 offset $1",
+        "select id, title, is_completed from item
+        order by id desc
+        limit 3000 offset $1",
         offset.unwrap_or(0)
     )
     .fetch_all(db)
@@ -49,7 +51,7 @@ pub async fn save_item(
             item.is_completed,
             id
         )
-        .fetch_one(db)
+        .execute(db)
         .await?;
         Ok(item)
     } else {
