@@ -57,7 +57,7 @@ where
         // Make sure you use `make build` in the Makefile to get both to happen
         // together
         let tailwind = include_str!("./tailwind.generated.css");
-        let htmx = include_str!("./htmx-1.9.3.vendor.js");
+        let htmx = include_str!("./htmx-1.9.4.vendor.js");
         format!(
             r#"
             <html>

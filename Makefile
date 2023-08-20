@@ -1,17 +1,28 @@
 SHELL := /bin/bash
 ENV=source .env &&
-DB_CONTAINER_NAME := "lnk_db"
+DB_CONTAINER_NAME := "todo_db"
 
-build:
+build: setup
 	pnpm run build
 	cargo build
 
-dev:
+setup:
+	[[ ! -f ./src/htmx-1.9.4.vendor.js ]] \
+		&& curl -L https://unpkg.com/htmx.org@1.9.4 > src/htmx-1.9.4.vendor.js \
+		|| true
+	[[ ! -d node_modules ]] \
+		&& pnpm install \
+		|| true
+
+dev: setup
 	npx concurrently --names 'tailwind,cargo' \
 		'pnpm run dev' \
 		"cargo watch -x 'run'"
 
-
+# 99% of the time, this is what you want when you change `initdb.sql`, because
+# you want to re-init the DB with that change, and also watch to make sure
+# your change doesn't have a bug.
+db: reset-db watch-db
 
 start-db:
 	$(ENV) docker run \

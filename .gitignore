@@ -2,3 +2,4 @@
 .env
 node_modules
 tailwind.generated.css
+src/htmx-1.9.4.vendor.js
