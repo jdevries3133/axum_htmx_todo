@@ -4,8 +4,15 @@ use sqlx::{postgres::PgPool, query, query_as};
 
 pub async fn get_items(
     db: &PgPool,
-    offset: Option<i64>,
+    page: Option<i32>,
 ) -> Result<Vec<models::Item>> {
+    let page_size = 20;
+    let offset: i64 = if let Some(p) = page {
+        let p64: i64 = p.into();
+        p64 * page_size
+    } else {
+        0
+    };
     struct QRes {
         id: i32,
         title: String,
@@ -14,9 +21,10 @@ pub async fn get_items(
     let res = query_as!(
         QRes,
         "select id, title, is_completed from item
-        order by id desc
-        limit 3000 offset $1",
-        offset.unwrap_or(0)
+        order by is_completed, id desc
+        limit $1 offset $2",
+        page_size,
+        offset
     )
     .fetch_all(db)
     .await?;
@@ -73,14 +81,10 @@ pub async fn save_item(
     }
 }
 
-pub async fn delete_item(
-    db: &PgPool,
-    id: i32
-) -> Result<()> {
-    query!(
-        "delete from item where id = $1",
-        id
-    ).execute(db).await?;
+pub async fn delete_item(db: &PgPool, id: i32) -> Result<()> {
+    query!("delete from item where id = $1", id)
+        .execute(db)
+        .await?;
 
     Ok(())
 }

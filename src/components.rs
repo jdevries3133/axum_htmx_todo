@@ -34,6 +34,7 @@ pub trait Component: private::ComponentInternal + Sized + Clone {
 #[derive(Clone)]
 pub struct Page<T>
 where
+    // TODO: I can remove + Clone here
     T: Component + Clone,
 {
     pub title: String,
@@ -107,7 +108,7 @@ impl private::ComponentInternal for TodoHome {
                     </div>
                 </form>
                 <div
-                    hx-get="/todo-items"
+                    hx-get="/item"
                     hx-trigger="load"
                     id="todo-items"
                 >
@@ -180,6 +181,7 @@ impl private::ComponentInternal for Item {
 #[derive(Clone)]
 pub struct ItemList {
     pub items: Vec<models::Item>,
+    pub next_page: Option<i32>,
 }
 impl Component for ItemList {}
 impl private::ComponentInternal for ItemList {
@@ -190,10 +192,43 @@ impl private::ComponentInternal for ItemList {
     fn render_internal(sanitized: &ItemList) -> String {
         let mut items_clone = sanitized.items.clone();
         items_clone.sort_by_key(|i| i.is_completed);
-        items_clone
+        let items = items_clone
             .iter()
             .map(|i| Item { item: i.clone() }.render())
             .collect::<Vec<String>>()
-            .join("")
+            .join("");
+        let hx_get_infinite_scroll = if let Some(page) = sanitized.next_page {
+            InfiniteScroll {
+                next_href: format!("/item?page={}", page),
+            }
+            .render()
+        } else {
+            "".to_string()
+        };
+
+        if items_clone.len() != 0 {
+        [items, hx_get_infinite_scroll].join("")
+        } else {
+            "".to_string()
+        }
+    }
+}
+
+#[derive(Clone)]
+pub struct InfiniteScroll {
+    pub next_href: String,
+}
+impl Component for InfiniteScroll {}
+impl private::ComponentInternal for InfiniteScroll {
+    fn sanitize(&self) -> Self {
+        InfiniteScroll {
+            next_href: clean(&self.next_href),
+        }
+    }
+    fn render_internal(sanitized: &Self) -> String {
+        format!(
+            r#"<div hx-trigger="revealed" hx-swap="outerHTML" hx-get="{}" />"#,
+            sanitized.next_href
+        )
     }
 }

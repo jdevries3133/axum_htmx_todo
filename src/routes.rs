@@ -4,7 +4,7 @@ use super::{
 };
 use anyhow::Result;
 use axum::{
-    extract::{Query, State, Path},
+    extract::{Path, Query, State},
     response::IntoResponse,
     Form,
 };
@@ -20,7 +20,7 @@ pub async fn root() -> impl IntoResponse {
 
 #[derive(Deserialize)]
 pub struct ListParams {
-    pub page: Option<i64>,
+    pub page: Option<i32>,
 }
 pub async fn list_todos(
     State(AppState { db }): State<AppState>,
@@ -28,7 +28,13 @@ pub async fn list_todos(
 ) -> Result<impl IntoResponse, ServerError> {
     let todos = db_ops::get_items(&db, page).await?;
 
-    Ok(components::ItemList { items: todos }.render())
+    let next_page = if let Some(p) = page {
+        p + 1
+    } else {
+        1
+    };
+
+    Ok(components::ItemList { items: todos, next_page: Some(next_page) }.render())
 }
 
 #[derive(Deserialize)]
@@ -64,7 +70,7 @@ pub async fn save_todo(
 
 pub async fn delete_todo(
     State(AppState { db }): State<AppState>,
-    Path(id): Path<i32>
+    Path(id): Path<i32>,
 ) -> Result<impl IntoResponse, ServerError> {
     db_ops::delete_item(&db, id).await?;
     Ok("")
