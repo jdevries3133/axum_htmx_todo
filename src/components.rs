@@ -34,14 +34,13 @@ pub trait Component: private::ComponentInternal + Sized + Clone {
 #[derive(Clone)]
 pub struct Page<T>
 where
-    // TODO: I can remove + Clone here
-    T: Component + Clone,
+    T: Component,
 {
     pub title: String,
     pub children: Box<T>,
 }
 
-impl<T> Component for Page<T> where T: Component + Clone {}
+impl<T> Component for Page<T> where T: Component {}
 impl<T> private::ComponentInternal for Page<T>
 where
     T: Component,
